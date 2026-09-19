@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tara - Empathetic Investing Mentor &amp; Autonomous Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mint: { 50: '#f2fbf7', 100: '#e1f7ed', 400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857' },
+                        softbg: { 50: '#f8fafc', 100: '#f1f5f9', 800: '#1e293b', 900: '#0f172a', 950: '#0b0f19' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.25); border-radius: 9999px; }
+        
+        .typing-dot { animation: typing 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); opacity: 0.35; }
+            50% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        /* Voice Orb Ambient Glow */
+        .orb-glow {
+            background: radial-gradient(circle at 35% 35%, #6ee7b7, #10b981, #064e3b);
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.4);
+            transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+        }
+
+        @media print {
+            aside, header, #chat-input-container, #theme-toggle-btn, .starter-pill, #current-mode-label, button, #telemetry-modal, #voice-mode-screen, #login-modal {
+                display: none !important;
+            }
+            body, main {
+                background: white !important;
+                color: black !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#fcfdfd] dark:bg-softbg-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200 overflow-hidden">
+
+    <!-- Mobile Top Header -->
+    <header class="md:hidden flex items-center justify-between p-3.5 bg-white dark:bg-softbg-900 border-b border-slate-200 dark:border-slate-800 z-20">
+        <div class="flex items-center space-x-2.5">
+            <button id="mobile-menu-btn" class="text-slate-600 dark:text-slate-300 p-1.5">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-mint-500 to-teal-400 flex items-center justify-center text-white font-bold text-sm shadow-sm">T</div>
+            <span class="font-bold text-base tracking-tight text-slate-900 dark:text-white">Tara</span>
+        </div>
+        <button id="new-chat-mobile" class="p-2 text-mint-600 hover:bg-slate-100 dark:hover:bg-softbg-800 rounded-lg">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+    </header>
+
+    <!-- Navigation Sidebar -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-30 w-72 bg-white dark:bg-softbg-900 border-r border-slate-200/80 dark:border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-screen shrink-0 shadow-sm md:shadow-none">
+        
+        <!-- App Title & Theme -->
+        <div class="p-4 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-mint-500 to-teal-400 flex items-center justify-center text-white font-extrabold text-base shadow-sm">T</div>
+                <div>
+                    <h1 class="font-bold text-base tracking-tight text-slate-900 dark:text-white leading-none">Tara</h1>
+                    <span class="text-[11px] text-slate-400 dark:text-slate-400 font-medium">Your Investing Mentor</span>
+                </div>
+            </div>
+            <button id="theme-toggle-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-softbg-800 transition-colors" title="Toggle Theme">
+                <i class="fa-regular fa-moon dark:hidden text-slate-600"></i>
+                <i class="fa-regular fa-sun hidden dark:block text-amber-400"></i>
+            </button>
+        </div>
+
+        <!-- Mode Selector -->
+        <div class="p-3 border-b border-slate-200/80 dark:border-slate-800">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">Mentor Mode</div>
+            <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-softbg-800 rounded-xl text-xs font-semibold">
+                <button id="mode-learn-btn" type="button" class="py-2 px-2 rounded-lg bg-mint-600 text-white transition-all text-center flex items-center justify-center space-x-1.5 shadow-sm">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Learn</span>
+                </button>
+                <button id="mode-analyze-btn" type="button" class="py-2 px-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all text-center flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Analyze</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="p-3 border-b border-slate-200/80 dark:border-slate-800 space-y-2">
+            <button id="new-chat-btn" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-softbg-800 dark:hover:bg-softbg-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-all flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>New Conversation</span>
+            </button>
+            
+            <button id="launch-voice-agent-btn" class="w-full py-2.5 px-3 bg-mint-50 dark:bg-mint-950/40 hover:bg-mint-100 dark:hover:bg-mint-900/50 border border-mint-200 dark:border-mint-500/30 text-mint-700 dark:text-mint-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 shadow-sm">
+                <i class="fa-solid fa-microphone-lines text-mint-500 animate-pulse"></i>
+                <span>Voice Mentor (Speak to Tara)</span>
+            </button>
+        </div>
+
+        <!-- Recent Chats -->
+        <div class="flex-1 overflow-y-auto p-3 space-y-1" id="chat-history-container">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1">Recent Conversations</div>
+        </div>
+
+        <!-- Live Database Status -->
+        <div id="open-telemetry-btn" class="p-3 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-softbg-950/40 cursor-pointer hover:bg-slate-100 dark:hover:bg-softbg-800 transition-colors" title="View technical system records">
+            <div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-6 h-6 rounded-lg bg-mint-500/10 text-mint-600 dark:text-mint-400 flex items-center justify-center font-bold text-[10px]">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] font-semibold text-slate-800 dark:text-slate-200 flex items-center space-x-1">
+                            <span>Timescale Cloud</span>
+                        </div>
+                        <div class="text-[9px] text-mint-600 dark:text-mint-400 font-medium">Real-Time Data Active</div>
+                    </div>
+                </div>
+                <button id="clear-history-btn" class="text-slate-400 hover:text-rose-500 p-1" title="Clear Conversations" onclick="event.stopPropagation()">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-20 hidden md:hidden"></div>
+
+    <!-- MAIN CHAT WORKSPACE -->
+    <main id="chat-workspace" class="flex-1 flex flex-col h-[calc(100vh-61px)] md:h-screen relative overflow-hidden bg-white dark:bg-softbg-950">
+        
+        <!-- Top Status Bar -->
+        <div class="h-12 px-4 md:px-6 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between bg-white/90 dark:bg-softbg-950/90 backdrop-blur-md z-10 shrink-0">
+            <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-mint-500 animate-pulse"></span>
+                <span id="current-mode-label" class="font-semibold text-xs text-slate-700 dark:text-slate-300">Learn Mode (Safe, Jargon-Free Mentor)</span>
+            </div>
+
+            <!-- Header Controls: Sign In + Pitch Scenarios -->
+            <div class="flex items-center space-x-2">
+                <button id="user-login-btn" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-softbg-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-mint-500 transition-colors flex items-center space-x-1.5" title="Sign In to Save History">
+                    <i class="fa-regular fa-user text-mint-500"></i>
+                    <span id="user-display-name">Sign In</span>
+                </button>
+
+                <select id="demo-scenarios-select" class="bg-slate-100 dark:bg-softbg-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold px-2.5 py-1 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-mint-500 cursor-pointer">
+                    <option value="" disabled selected>Quick Pitch Demo Scenarios ▾</option>
+                    <option value="panic">Scenario 1: Panic Seller (NVDA Drop)</option>
+                    <option value="discount">Scenario 2: Value Hunter (AMD Discount)</option>
+                    <option value="crypto">Scenario 3: Crypto Recovery (SOL $180)</option>
+                    <option value="radar">Scenario 4: Market Radar (Top Momentum)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Chat Stream -->
+        <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+            
+            <!-- Welcome View -->
+            <div id="welcome-view" class="max-w-xl mx-auto py-12 text-center space-y-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-mint-500 to-teal-400 text-white flex items-center justify-center mx-auto text-2xl font-extrabold shadow-md shadow-mint-500/20">
+                    T
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Hi, I'm Tara!
+                    </h2>
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed max-w-md mx-auto">
+                        I am your friendly investing guide. I help you build confidence, understand market trends calmly, and make stress-free long-term financial decisions.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div id="active-messages" class="max-w-2xl mx-auto space-y-4"></div>
+        </div>
+
+        <!-- Input Bar with Starter Pills -->
+        <div id="chat-input-container" class="p-3 md:px-6 bg-white dark:bg-softbg-950 border-t border-slate-200/80 dark:border-slate-800 shrink-0">
+            <div class="max-w-2xl mx-auto space-y-2.5">
+                
+                <!-- Floating Starter Question Pills (Hides after first message) -->
+                <div id="input-starter-pills" class="flex flex-wrap items-center gap-1.5 transition-all duration-300">
+                    <span class="text-[11px] font-semibold text-slate-400 mr-1"><i class="fa-regular fa-lightbulb text-amber-500 mr-1"></i>Try asking:</span>
+                    <button class="starter-pill px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-mint-50 hover:text-mint-700 hover:border-mint-300 dark:bg-softbg-900 dark:hover:bg-softbg-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs transition-all flex items-center space-x-1.5" data-text="What does Dollar-Cost Averaging mean in simple terms?">
+                        <span>💡 What is Dollar-Cost Averaging?</span>
+                    </button>
+                    <button class="starter-pill px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-mint-50 hover:text-mint-700 hover:border-mint-300 dark:bg-softbg-900 dark:hover:bg-softbg-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs transition-all flex items-center space-x-1.5" data-text="Analyze Apple stock">
+                        <span>📈 Analyze Apple</span>
+                    </button>
+                    <button class="starter-pill px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-mint-50 hover:text-mint-700 hover:border-mint-300 dark:bg-softbg-900 dark:hover:bg-softbg-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs transition-all flex items-center space-x-1.5" data-text="What is the most in demand stock right now?">
+                        <span>🔥 Market Radar</span>
+                    </button>
+                </div>
+
+                <div class="relative bg-slate-50 dark:bg-softbg-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm focus-within:border-mint-500 focus-within:ring-1 focus-within:ring-mint-500 transition-all flex items-end">
+                    
+                    <input type="file" id="csv-upload-input" accept=".csv" class="hidden">
+                    <button id="csv-upload-btn" type="button" class="p-3 text-slate-400 hover:text-mint-600 transition-colors" title="Upload Portfolio CSV">
+                        <i class="fa-solid fa-paperclip text-sm"></i>
+                    </button>
+
+                    <textarea 
+                        id="chat-input" 
+                        rows="1" 
+                        placeholder="Type a question or message to Tara..." 
+                        class="w-full p-3 pl-1 pr-20 bg-transparent resize-none border-none focus:outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm max-h-32"
+                    ></textarea>
+
+                    <div class="flex items-center space-x-1 absolute right-2.5 bottom-2.5">
+                        <button id="voice-btn" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-mint-600 transition-colors" title="Speech to Text">
+                            <i class="fa-solid fa-microphone text-xs"></i>
+                        </button>
+                        <button id="send-btn" class="p-1.5 rounded-xl bg-mint-600 hover:bg-mint-500 disabled:opacity-30 text-white transition-all shadow-sm" disabled>
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center text-[10px] text-slate-400 dark:text-slate-500">
+                    <span><i class="fa-solid fa-shield-heart mr-1 text-mint-500"></i> Tara provides friendly financial education and math. You stay in full control.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FULLSCREEN VOICE AGENT WITH AUDIO-REACTIVE PULSING -->
+    <div id="voice-mode-screen" class="fixed inset-0 bg-[#0c1017] z-50 hidden flex flex-col justify-between p-6 transition-all duration-500">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-mint-500 to-teal-400 flex items-center justify-center text-white font-bold text-sm">T</div>
+                <div>
+                    <h3 class="font-bold text-sm text-white">Tara Voice Mentor</h3>
+                    <span class="text-[10px] text-mint-400 font-medium">ElevenLabs Expressive Voice</span>
+                </div>
+            </div>
+            <button id="close-voice-screen-btn" class="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center space-y-8 my-auto">
+            <div class="relative flex items-center justify-center">
+                <!-- Outer Soundwave Pulse Rings -->
+                <div id="orb-ring" class="absolute w-60 h-60 rounded-full border border-mint-500/20 scale-100 transition-all duration-300 pointer-events-none"></div>
+                
+                <!-- Interactive Audio-Reactive Orb -->
+                <div id="voice-orb" class="w-44 h-44 rounded-full orb-glow cursor-pointer flex items-center justify-center select-none">
+                    <i id="orb-icon" class="fa-solid fa-microphone text-white/50 text-3xl transition-transform duration-100"></i>
+                </div>
+            </div>
+
+            <div class="text-center space-y-2 max-w-md">
+                <div id="voice-status-badge" class="inline-block px-3 py-1 rounded-full bg-mint-500/10 text-mint-400 border border-mint-500/20 text-xs font-semibold">
+                    Tap the mic to talk with Tara
+                </div>
+                <p id="voice-live-transcript" class="text-slate-200 text-sm font-medium italic min-h-[44px] px-4 leading-relaxed">
+                    "Hi, I'm Tara! What questions do you have about investing or your money?"
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center space-x-6 pb-6">
+            <button id="voice-mode-mic-toggle" class="w-14 h-14 rounded-full bg-mint-600 hover:bg-mint-500 text-white flex items-center justify-center text-xl shadow-lg shadow-mint-600/30 transition-all active:scale-95">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button id="exit-voice-mode-btn" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-rose-600/80 text-slate-400 hover:text-white flex items-center justify-center text-lg transition-all">
+                <i class="fa-solid fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- TimescaleDB Live Telemetry Modal -->
+    <div id="telemetry-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-softbg-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-mint-500 animate-ping"></span>
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white font-mono">TimescaleDB Hypertable Telemetry</h3>
+                </div>
+                <button id="close-telemetry-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            
+            <div class="bg-slate-100 dark:bg-softbg-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                <span><strong class="text-mint-600 dark:text-mint-400">SQL:</strong> SELECT time, symbol, price, trend_price FROM crypto_metrics LIMIT 10;</span>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-mint-500/10 text-mint-600 dark:text-mint-400 font-bold">CONNECTED</span>
+            </div>
+
+            <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                <table class="w-full text-left text-xs font-mono">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase">
+                            <th class="py-1.5">Timestamp</th>
+                            <th class="py-1.5">Symbol</th>
+                            <th class="py-1.5">Price</th>
+                            <th class="py-1.5">Normal Baseline</th>
+                            <th class="py-1.5">Deviation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="telemetry-rows" class="divide-y divide-slate-200 dark:divide-slate-800/60">
+                        <tr><td colspan="5" class="py-4 text-center text-slate-400 italic">No telemetry ticks yet. Run an analysis!</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Login & Past Chat Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-softbg-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white">Account &amp; Past Chats</h3>
+                <button id="close-login-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Enter a username to load and save your conversations in Timescale Cloud:</p>
+            <input id="login-username-input" type="text" placeholder="e.g. sarah_invests" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-softbg-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-mint-500">
+            <button id="submit-login-btn" class="w-full py-2.5 bg-mint-600 hover:bg-mint-500 text-white font-bold rounded-xl text-xs transition-all shadow-sm">
+                Load Account &amp; History
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            chats: (JSON.parse(localStorage.getItem('tara_chats')) || []).filter(c => c.messages && c.messages.length > 0),
+            activeChatId: null,
+            mode: 'learn',
+            currentUser: localStorage.getItem('tara_username') || null,
+            isDarkMode: localStorage.getItem('tara_theme') !== 'light',
+            isGenerating: false,
+            isVoiceScreenActive: false,
+            isVoiceListening: false
+        };
+
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => document.querySelectorAll(s);
+
+        const chatContainer = $('#messages-container');
+        const activeMessages = $('#active-messages');
+        const welcomeView = $('#welcome-view');
+        const starterPillsContainer = $('#input-starter-pills');
+        const chatInput = $('#chat-input');
+        const sendBtn = $('#send-btn');
+        const voiceBtn = $('#voice-btn');
+        const chatHistoryContainer = $('#chat-history-container');
+        const modeLearnBtn = $('#mode-learn-btn');
+        const modeAnalyzeBtn = $('#mode-analyze-btn');
+        const currentModeLabel = $('#current-mode-label');
+        const sidebar = $('#sidebar');
+        const telemetryModal = $('#telemetry-modal');
+        const loginModal = $('#login-modal');
+
+        // Voice Screen Elements
+        const voiceScreen = $('#voice-mode-screen');
+        const voiceOrb = $('#voice-orb');
+        const orbRing = $('#orb-ring');
+        const voiceStatusBadge = $('#voice-status-badge');
+        const voiceLiveTranscript = $('#voice-live-transcript');
+        const voiceModeMicToggle = $('#voice-mode-mic-toggle');
+
+        function init() {
+            applyTheme();
+            state.chats = state.chats.filter(c => c.messages && c.messages.length > 0);
+            saveChats();
+
+            if (state.currentUser) {
+                $('#user-display-name').textContent = state.currentUser;
+            }
+
+            if (state.chats.length > 0) {
+                state.activeChatId = state.chats[0].id;
+                loadActiveChat();
+            } else {
+                state.activeChatId = null;
+                welcomeView.classList.remove('hidden');
+                activeMessages.classList.add('hidden');
+            }
+
+            renderChatHistory();
+            setupEventListeners();
+            setupChatSpeechToText();
+            setupVoiceAgentMode();
+        }
+
+        function setupEventListeners() {
+            chatInput.addEventListener('input', () => {
+                chatInput.style.height = 'auto';
+                chatInput.style.height = Math.min(chatInput.scrollHeight, 128) + 'px';
+                sendBtn.disabled = !chatInput.value.trim() || state.isGenerating;
+            });
+
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendBtn.disabled) handleSendMessage();
+                }
+            });
+
+            sendBtn.addEventListener('click', handleSendMessage);
+            $('#theme-toggle-btn').addEventListener('click', toggleTheme);
+
+            modeLearnBtn.addEventListener('click', () => switchMode('learn'));
+            modeAnalyzeBtn.addEventListener('click', () => switchMode('analyze'));
+
+            $('#new-chat-btn').addEventListener('click', startNewConversation);
+            $('#new-chat-mobile').addEventListener('click', startNewConversation);
+
+            // Floating Starter Pills Click Handler
+            $$('.starter-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    const text = pill.getAttribute('data-text');
+                    if (text) {
+                        chatInput.value = text;
+                        handleSendMessage();
+                    }
+                });
+            });
+
+            // Pitch Demo Scenarios
+            $('#demo-scenarios-select').addEventListener('change', (e) => {
+                const choice = e.target.value;
+                if (choice === 'panic') {
+                    switchMode('analyze');
+                    chatInput.value = "I bought 50 NVDA at $138 and now it dropped, should I dump it?";
+                } else if (choice === 'discount') {
+                    switchMode('analyze');
+                    chatInput.value = "Analyze AMD with buy price $0";
+                } else if (choice === 'crypto') {
+                    switchMode('analyze');
+                    chatInput.value = "I bought 10 SOL at $180";
+                } else if (choice === 'radar') {
+                    switchMode('analyze');
+                    chatInput.value = "What is the most in demand stock right now?";
+                }
+                handleSendMessage();
+                e.target.selectedIndex = 0;
+            });
+
+            $('#clear-history-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.chats = [];
+                state.activeChatId = null;
+                localStorage.removeItem('tara_chats');
+                activeMessages.innerHTML = '';
+                welcomeView.classList.remove('hidden');
+                activeMessages.classList.add('hidden');
+                starterPillsContainer.style.display = 'flex';
+                renderChatHistory();
+            });
+
+            $('#mobile-menu-btn').addEventListener('click', toggleMobileSidebar);
+            $('#mobile-overlay').addEventListener('click', toggleMobileSidebar);
+
+            $('#open-telemetry-btn').addEventListener('click', openTelemetryModal);
+            $('#close-telemetry-btn').addEventListener('click', () => telemetryModal.classList.add('hidden'));
+
+            // Auth Login Modal Handlers
+            $('#user-login-btn').addEventListener('click', () => loginModal.classList.remove('hidden'));
+            $('#close-login-btn').addEventListener('click', () => loginModal.classList.add('hidden'));
+            $('#submit-login-btn').addEventListener('click', handleUserLogin);
+
+            const csvInput = $('#csv-upload-input');
+            $('#csv-upload-btn').addEventListener('click', () => csvInput.click());
+            csvInput.addEventListener('change', handleCsvUpload);
+        }
+
+        // =========================================================================
+        // USER AUTHENTICATION & CLOUD SYNC
+        // =========================================================================
+        async function handleUserLogin() {
+            const usernameInput = $('#login-username-input');
+            const submitBtn = $('#submit-login-btn');
+            const username = usernameInput.value.trim();
+
+            if (!username) {
+                alert("Please enter a username to sign in.");
+                return;
+            }
+
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Loading Account...';
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.status === 'success') {
+                    state.currentUser = data.username;
+                    localStorage.setItem('tara_username', data.username);
+                    $('#user-display-name').textContent = data.username;
+                    loginModal.classList.add('hidden');
+
+                    if (data.chats && data.chats.length > 0) {
+                        state.chats = data.chats.map(c => ({
+                            id: c.chat_id,
+                            title: c.title,
+                            messages: typeof c.messages === 'string' ? JSON.parse(c.messages) : c.messages
+                        }));
+                        state.activeChatId = state.chats[0].id;
+                        loadActiveChat();
+                        renderChatHistory();
+                    }
+                } else {
+                    alert("Sign In Notice: " + (data.error || "Could not load account."));
+                }
+            } catch (e) {
+                alert("Database connection note: " + e.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        // =========================================================================
+        // REAL-TIME AUDIO VISUALIZER (Web Audio API RMS equivalent of Librosa)
+        // =========================================================================
+        let audioContext = null;
+        let analyser = null;
+        let microphoneStream = null;
+        let audioAnimId = null;
+
+        async function initAudioVisualizer() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                const source = audioContext.createMediaStreamSource(microphoneStream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+
+                visualizeVoiceLevel();
+            } catch (err) {
+                console.log("Audio visualizer microphone access notice:", err);
+            }
+        }
+
+        function visualizeVoiceLevel() {
+            if (!analyser || !state.isVoiceListening) {
+                voiceOrb.style.transform = 'scale(1)';
+                return;
+            }
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteFrequencyData(dataArray);
+
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                sum += dataArray[i];
+            }
+            const average = sum / bufferLength;
+            const normalized = Math.min(average / 128, 1.0);
+
+            const scaleFactor = 1 + (normalized * 0.45);
+            voiceOrb.style.transform = `scale(${scaleFactor})`;
+            orbRing.style.transform = `scale(${scaleFactor * 1.15})`;
+
+            audioAnimId = requestAnimationFrame(visualizeVoiceLevel);
+        }
+
+        function stopAudioVisualizer() {
+            if (audioAnimId) cancelAnimationFrame(audioAnimId);
+            if (microphoneStream) {
+                microphoneStream.getTracks().forEach(track => track.stop());
+                microphoneStream = null;
+            }
+            voiceOrb.style.transform = 'scale(1)';
+            orbRing.style.transform = 'scale(1)';
+        }
+
+        // =========================================================================
+        // SPEECH RECOGNITION (Chat Box - Transcribes Only)
+        // =========================================================================
+        function setupChatSpeechToText() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                voiceBtn.style.display = 'none';
+                return;
+            }
+
+            const chatRecognizer = new SpeechRecognition();
+            chatRecognizer.continuous = false;
+            chatRecognizer.interimResults = true;
+            let baseText = '';
+
+            voiceBtn.addEventListener('click', () => {
+                baseText = chatInput.value.trim();
+                voiceBtn.classList.add('text-rose-500', 'animate-pulse');
+                try {
+                    chatRecognizer.start();
+                } catch (e) {
+                    chatRecognizer.stop();
+                    voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+                }
+            });
+
+            chatRecognizer.onresult = (e) => {
+                let currentSpoken = '';
+                for (let i = 0; i < e.results.length; i++) {
+                    currentSpoken += e.results[i][0].transcript;
+                }
+                chatInput.value = (baseText ? baseText + ' ' : '') + currentSpoken.trim();
+                chatInput.style.height = 'auto';
+                chatInput.style.height = Math.min(chatInput.scrollHeight, 128) + 'px';
+                sendBtn.disabled = false;
+                chatInput.focus();
+            };
+
+            chatRecognizer.onerror = () => voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+            chatRecognizer.onend = () => voiceBtn.classList.remove('text-rose-500', 'animate-pulse');
+        }
+
+        // =========================================================================
+        // COPILOT VOICE AGENT (With 2.2s Natural Silence Debounce)
+        // =========================================================================
+        let voiceAgentRecognizer = null;
+        let currentAudio = null;
+        let silenceTimer = null;
+        let finalSpokenText = '';
+
+        function setupVoiceAgentMode() {
+            $('#launch-voice-agent-btn').addEventListener('click', openVoiceAgent);
+            $('#close-voice-screen-btn').addEventListener('click', closeVoiceAgent);
+            $('#exit-voice-mode-btn').addEventListener('click', closeVoiceAgent);
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                voiceAgentRecognizer = new SpeechRecognition();
+                voiceAgentRecognizer.continuous = true;
+                voiceAgentRecognizer.interimResults = true;
+
+                voiceAgentRecognizer.onstart = () => {
+                    state.isVoiceListening = true;
+                    finalSpokenText = '';
+                    voiceStatusBadge.textContent = "Listening... (Take your time speaking)";
+                    voiceStatusBadge.className = "inline-block px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-semibold";
+                    voiceModeMicToggle.classList.add('bg-sky-600', 'animate-pulse');
+                    voiceModeMicToggle.classList.remove('bg-mint-600');
+                    initAudioVisualizer();
+                };
+
+                voiceAgentRecognizer.onresult = (e) => {
+                    clearTimeout(silenceTimer);
+
+                    let interim = '';
+                    let finalized = '';
+
+                    for (let i = 0; i < e.results.length; i++) {
+                        if (e.results[i].isFinal) {
+                            finalized += e.results[i][0].transcript + ' ';
+                        } else {
+                            interim += e.results[i][0].transcript;
+                        }
+                    }
+
+                    finalSpokenText = (finalized + interim).trim();
+                    if (finalSpokenText) {
+                        voiceLiveTranscript.textContent = `"${finalSpokenText}"`;
+                    }
+
+                    silenceTimer = setTimeout(() => {
+                        if (finalSpokenText.length > 2) {
+                            voiceAgentRecognizer.stop();
+                            stopAudioVisualizer();
+                            handleVoiceUserInput(finalSpokenText);
+                        }
+                    }, 2200);
+                };
+
+                voiceAgentRecognizer.onerror = (e) => {
+                    if (e.error !== 'no-speech') {
+                        voiceStatusBadge.textContent = "Microphone paused • Tap mic to speak";
+                        stopAudioVisualizer();
+                    }
+                };
+
+                voiceAgentRecognizer.onend = () => {
+                    state.isVoiceListening = false;
+                    voiceModeMicToggle.classList.remove('bg-sky-600', 'animate-pulse');
+                    voiceModeMicToggle.classList.add('bg-mint-600');
+                    stopAudioVisualizer();
+                };
+            }
+
+            voiceModeMicToggle.addEventListener('click', () => {
+                if (state.isVoiceListening) {
+                    clearTimeout(silenceTimer);
+                    voiceAgentRecognizer.stop();
+                    stopAudioVisualizer();
+                    if (finalSpokenText.trim().length > 2) {
+                        handleVoiceUserInput(finalSpokenText.trim());
+                    }
+                } else {
+                    startListeningVoice();
+                }
+            });
+        }
+
+        function openVoiceAgent() {
+            voiceScreen.classList.remove('hidden');
+            state.isVoiceScreenActive = true;
+            voiceStatusBadge.textContent = "Ready • Tap mic to speak";
+            voiceLiveTranscript.textContent = '"Hi! I am Tara. Tap the microphone and tell me what you would like to know."';
+        }
+
+        function closeVoiceAgent() {
+            voiceScreen.classList.add('hidden');
+            state.isVoiceScreenActive = false;
+            if (voiceAgentRecognizer) voiceAgentRecognizer.stop();
+            if (currentAudio) currentAudio.pause();
+            stopAudioVisualizer();
+            window.speechSynthesis.cancel();
+        }
+
+        function startListeningVoice() {
+            if (!voiceAgentRecognizer) {
+                alert("Speech recognition is not supported in this browser. Please use Chrome, Safari, or Edge.");
+                return;
+            }
+            if (currentAudio) currentAudio.pause();
+            window.speechSynthesis.cancel();
+            try {
+                voiceAgentRecognizer.start();
+            } catch (e) {
+                voiceAgentRecognizer.stop();
+            }
+        }
+
+        function cleanSpokenText(text) {
+            return text
+                .replace(/#+\s*/g, '')
+                .replace(/---+/g, '')
+                .replace(/\*+/g, '')
+                .replace(/\|.*?\|/g, '')
+                .replace(/^\s*[-*]\s+/gm, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        // =========================================================================
+        // UNIFIED VOICE LOGIC: Accurate Intent Routing
+        // =========================================================================
+        async function handleVoiceUserInput(userText) {
+            if (!userText.trim()) return;
+            if (voiceAgentRecognizer) voiceAgentRecognizer.stop();
+            stopAudioVisualizer();
+
+            voiceStatusBadge.textContent = "Tara is thinking...";
+            voiceStatusBadge.className = "inline-block px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold";
+
+            const isRadarQuery = /(?:in demand|most in demand|trending|hottest|best stock|radar)/i.test(userText);
+            
+            // Protect educational concepts from triggering stock analysis in voice mode
+            const isVoiceEducational = /(?:dollar[-\s]cost|dca|what is|explain|meaning of)/i.test(userText);
+            const isAnalyzeIntent = !isVoiceEducational && /(?:analyze|calculate|price of|bought\s+\d+|holding\s+\d+|check\s+stock)/i.test(userText);
+
+            if (isRadarQuery) {
+                try {
+                    const res = await fetch('/api/market-radar');
+                    const data = await res.json();
+                    if (data.items && data.items.length >= 2) {
+                        const topDemand = data.items[0];
+                        const topDiscount = data.items[data.items.length - 1];
+                        const radarSpoken = `Looking at our 30-day fair value line, ${topDemand.symbol} currently has strong momentum, trading ${topDemand.diff_percent} percent above its normal pace. On the discount side, ${topDiscount.symbol} is trading ${Math.abs(topDiscount.diff_percent)} percent below normal, which could be an attractive entry.`;
+                        voiceLiveTranscript.textContent = `"${radarSpoken}"`;
+                        speakWithElevenLabs(radarSpoken);
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            if (isAnalyzeIntent) {
+                const parsed = parseInvestmentInput(userText);
+                try {
+                    const resp = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbol: parsed.symbol, buy_price: parsed.buyPrice, amount: parsed.amount })
+                    });
+                    const data = await resp.json();
+
+                    if (!data.error) {
+                        let spokenReply = "";
+                        if (parsed.buyPrice > 0) {
+                            spokenReply = `For ${data.name}, the current price is $${data.current_price}. Your investment is ${data.pnl_percent >= 0 ? 'up' : 'down'} ${Math.abs(data.pnl_percent)} percent. My top suggestion: ${data.option_1.split('.')[0]}.`;
+                        } else {
+                            spokenReply = `${data.name} is currently $${data.current_price}, which is ${Math.abs(data.percent_diff)} percent ${data.percent_diff >= 0 ? 'above' : 'below'} its typical 30-day price of $${data.trend_price}. A sensible first step: ${data.option_1.split('.')[0]}.`;
+                        }
+                        voiceLiveTranscript.textContent = `"${spokenReply}"`;
+                        speakWithElevenLabs(spokenReply);
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            // Conversational Tutor (Learn Mode)
+            try {
+                const conversationalPrompt = `[VOICE CONVERSATION: Answer warmly in 2 short sentences. Speak like an encouraging mentor for a beginner woman investor. Do not use bullet points or markdown]: ${userText}`;
+                const resp = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: conversationalPrompt, mode: 'learn' })
+                });
+                const chatRes = await resp.json();
+                const cleanedReply = cleanSpokenText(chatRes.reply || "I am right here with you! How can I help you learn today?");
+                voiceLiveTranscript.textContent = `"${cleanedReply}"`;
+                speakWithElevenLabs(cleanedReply);
+            } catch (err) {
+                voiceStatusBadge.textContent = "Could not reach Tara";
+            }
+        }
+
+        async function speakWithElevenLabs(textToSpeak) {
+            voiceStatusBadge.textContent = "Tara is speaking...";
+            voiceStatusBadge.className = "inline-block px-3 py-1 rounded-full bg-mint-500/10 text-mint-400 border border-mint-500/20 text-xs font-semibold";
+            const cleaned = cleanSpokenText(textToSpeak);
+
+            try {
+                const res = await fetch('/api/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: cleaned })
+                });
+
+                if (res.headers.get('content-type')?.includes('audio/mpeg')) {
+                    const audioBlob = await res.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    currentAudio = new Audio(audioUrl);
+                    currentAudio.play();
+                    currentAudio.onended = () => {
+                        voiceStatusBadge.textContent = "Tap mic to reply";
+                    };
+                    return;
+                }
+
+                // Browser voice fallback
+                const data = await res.json();
+                const utterance = new SpeechSynthesisUtterance(data.clean_text || cleaned);
+                utterance.rate = 0.95;
+                const voices = window.speechSynthesis.getVoices();
+                const femaleVoice = voices.find(v => v.name.includes("Samantha") || v.name.includes("Zira") || v.name.includes("Natural"));
+                if (femaleVoice) utterance.voice = femaleVoice;
+                utterance.onend = () => { voiceStatusBadge.textContent = "Tap mic to reply"; };
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                voiceStatusBadge.textContent = "Tap mic to reply";
+            }
+        }
+
+        // =========================================================================
+        // CHAT HANDLER (FIXED: Dollar-Cost Averaging & Learning Concept Guard)
+        // =========================================================================
+        async function handleSendMessage() {
+            const text = chatInput.value.trim();
+            if (!text || state.isGenerating) return;
+
+            if (starterPillsContainer) {
+                starterPillsContainer.style.display = 'none';
+            }
+
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            sendBtn.disabled = true;
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const currentChat = getOrCreateActiveChat(text);
+            currentChat.messages.push({ role: 'user', content: text, time });
+            appendMessageBubble('user', text, time, true);
+
+            const isRadarQuery = /(?:in demand|most in demand|trending stock|hottest stock|best stock|market radar)/i.test(text);
+
+            // FIX: EXCLUDE educational questions like "Dollar-Cost Averaging" from triggering stock analysis!
+            const isEducationalConcept = /(?:dollar[-\s]cost|dca|what is|how does|explain|meaning of)/i.test(text);
+
+            const isAnalyzeIntent = !isEducationalConcept && (
+                /(?:analyze|review|check ticker)\s+[a-zA-Z]+/i.test(text) ||
+                /(?:bought|purchased|holding|own)\s+\d+/i.test(text) ||
+                /(?:cost basis|my cost|avg cost)\s*:?\s*\$?\d+/i.test(text)
+            );
+
+            if (state.mode === 'learn' && (isAnalyzeIntent || isRadarQuery)) {
+                const redirectMsg = `I'm currently in **Learn Mode**, which focuses on building calm investing concepts without market stress. To see real price trendlines and calculate numbers, please switch to **Analyze Mode** using the button in the top left!`;
+                currentChat.messages.push({ role: 'assistant', content: redirectMsg, time });
+                appendMessageBubble('assistant', redirectMsg, time, true);
+                saveChats();
+                return;
+            }
+
+            if (state.mode === 'analyze' && isRadarQuery) {
+                executeMarketRadar();
+                return;
+            }
+
+            if (state.mode === 'analyze') {
+                const parsed = parseInvestmentInput(text);
+                executeAnalysis(parsed.symbol, parsed.buyPrice, parsed.amount);
+                return;
+            }
+
+            // Learn Mode
+            renderTypingIndicator();
+            state.isGenerating = true;
+
+            try {
+                const resp = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, mode: state.mode })
+                });
+                const chatRes = await resp.json();
+                removeTypingIndicator();
+
+                const reply = chatRes.reply;
+                currentChat.messages.push({ role: 'assistant', content: reply, time });
+                appendMessageBubble('assistant', reply, time, true);
+                saveChats();
+            } catch (err) {
+                removeTypingIndicator();
+                appendMessageBubble('assistant', `Connection note: ${err.message}`, time, true);
+            } finally {
+                state.isGenerating = false;
+                scrollToBottom();
+            }
+        }
+
+        // =========================================================================
+        // ANALYSIS CARD WITH AUTONOMOUS SOLANA AGENT DCA TRIGGER
+        // =========================================================================
+        async function executeAnalysis(symbol, buyPrice = 0.0, amount = 1.0) {
+            renderTypingIndicator();
+            state.isGenerating = true;
+            const currentChat = state.chats.find(c => c.id === state.activeChatId);
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            try {
+                const resp = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, buy_price: buyPrice, amount })
+                });
+                const data = await resp.json();
+                removeTypingIndicator();
+
+                if (resp.status === 404 || data.error) {
+                    const errorMsg = data.error || `I couldn't find price data for ${symbol}. Please check the symbol!`;
+                    currentChat.messages.push({ role: 'assistant', content: errorMsg, time });
+                    appendMessageBubble('assistant', errorMsg, time, true);
+                    saveChats();
+                    return;
+                }
+
+                const canvasId = `chart-${data.symbol}-${Date.now()}`;
+                const hasUserPosition = data.user_buy_price > 0;
+                const isPnlPositive = data.pnl_dollar >= 0;
+                const isTrendAbove = data.position === 'ABOVE';
+
+                const cardHtml = `
+                    <div class="rounded-2xl bg-white dark:bg-[#151922] border border-slate-200 dark:border-slate-800 p-4 text-slate-800 dark:text-slate-100 font-sans shadow-sm w-full text-xs space-y-3.5">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="text-sm font-bold text-slate-600 dark:text-slate-300">${data.name} (${data.symbol})</div>
+                                <div class="flex items-baseline space-x-2.5 mt-1">
+                                    <span class="text-3xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight">$${data.current_price.toLocaleString()}</span>
+                                    
+                                    ${hasUserPosition ? `
+                                        <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono ${isPnlPositive ? 'bg-mint-500/10 text-mint-600 dark:text-mint-400 border border-mint-500/20' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'}">
+                                            ${isPnlPositive ? '↑ +' : '↓ '}${data.pnl_percent}% Return
+                                        </span>
+                                    ` : `
+                                        <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold font-mono ${isTrendAbove ? 'bg-mint-500/10 text-mint-600 dark:text-mint-400 border border-mint-500/20' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20'}">
+                                            ${isTrendAbove ? '↑' : '↓'} ${Math.abs(data.percent_diff)}% vs Normal
+                                        </span>
+                                    `}
+                                </div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                                    <span>Typical 30-Day Fair Price: <strong class="font-mono text-slate-700 dark:text-slate-200">$${data.trend_price.toLocaleString()}</strong></span>
+                                    ${hasUserPosition ? `
+                                        <span>Total Invested: <strong class="font-mono text-slate-700 dark:text-slate-200">$${(data.user_buy_price * data.user_amount).toFixed(2)}</strong></span>
+                                        <span>Current Value: <strong class="font-mono text-slate-700 dark:text-slate-200">$${(data.current_price * data.user_amount).toFixed(2)}</strong></span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <button onclick="window.print()" class="text-[11px] text-slate-400 hover:text-mint-600 font-mono transition-colors" title="Print Briefing">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> Print
+                            </button>
+                        </div>
+
+                        <!-- Canvas Chart (Adapts to light & dark theme) -->
+                        <div class="w-full h-44 relative bg-slate-50 dark:bg-[#0c1017] rounded-xl p-1.5 border border-slate-200 dark:border-slate-800/80">
+                            <canvas id="${canvasId}" class="w-full h-full block"></canvas>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
+                            <div class="flex items-center space-x-1.5">
+                                <i class="fa-regular fa-calendar text-slate-400 text-[10px]"></i>
+                                <span>${data.start_date} – ${data.end_date}</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold text-[10px]">
+                                30-Day Healthy Trendline (Fair Value)
+                            </span>
+                        </div>
+
+                        <!-- 3 Simple Paths Forward -->
+                        <div class="pt-2 border-t border-slate-200/80 dark:border-slate-800 space-y-2 text-[11px]">
+                            <div class="font-bold uppercase tracking-wider text-slate-400 text-[10px]">
+                                3 Simple Paths Forward:
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 dark:bg-softbg-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200">
+                                <strong class="text-mint-600 dark:text-mint-400 block mb-0.5">Option 1: Be Patient (Wait It Out)</strong>
+                                ${data.option_1}
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 dark:bg-softbg-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 space-y-2">
+                                <div>
+                                    <strong class="text-sky-600 dark:text-sky-400 block mb-0.5">Option 2: Lower Your Average Cost (DCA)</strong>
+                                    ${data.option_2}
+                                </div>
+                                
+                                <!-- Simulator -->
+                                <div class="p-2.5 bg-white dark:bg-[#0b0f19] rounded-lg border border-sky-500/20 space-y-1.5">
+                                    <div class="flex justify-between items-center text-[10px]">
+                                        <span class="text-sky-600 dark:text-sky-400 font-semibold"><i class="fa-solid fa-sliders mr-1"></i> Interactive 6-Month DCA Simulator</span>
+                                        <span class="font-mono text-slate-800 dark:text-white font-bold" id="slider-val-${canvasId}">$50 / week</span>
+                                    </div>
+                                    <input type="range" min="10" max="500" step="10" value="50" class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500" id="dca-slider-${canvasId}">
+                                    <div class="flex justify-between text-[9px] text-slate-500 dark:text-slate-400 font-mono pt-1">
+                                        <span>Invested: <strong class="text-slate-700 dark:text-slate-200" id="dca-invested-${canvasId}">$1,300</strong></span>
+                                        <span>Projected: <strong class="text-mint-600 dark:text-mint-400 font-bold" id="dca-projected-${canvasId}">$1,348</strong></span>
+                                        <span>Break-Even: <strong class="text-sky-600 dark:text-sky-300">~38% Faster</strong></span>
+                                    </div>
+                                </div>
+
+                                <!-- Autonomous Solana Agent DCA Execution Button (For MLH Solana Prize) -->
+                                <div class="pt-1">
+                                    <button onclick="triggerSolanaAgentDCA('${data.symbol}', 0.05)" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-[11px] shadow-sm transition-all flex items-center justify-center space-x-2">
+                                        <i class="fa-solid fa-bolt-lightning text-amber-300"></i>
+                                        <span>Execute Autonomous Agent DCA on Solana Devnet (0.05 SOL)</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 dark:bg-softbg-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200">
+                                <strong class="text-amber-600 dark:text-amber-400 block mb-0.5">Option 3: Keep Cash Safe On The Sidelines</strong>
+                                ${data.option_3}
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-200/80 dark:border-slate-800 text-[11px] space-y-1 text-slate-600 dark:text-slate-300">
+                            <div><strong class="text-mint-600 dark:text-mint-400">Current Momentum:</strong> ${data.bull_point}</div>
+                            <div><strong class="text-rose-500 dark:text-rose-400">Remember:</strong> ${data.bear_point}</div>
+                        </div>
+                    </div>
+                `;
+
+                const axisData = {
+                    start_date: data.start_date,
+                    mid_date: data.mid_date,
+                    end_date: data.end_date,
+                    trend_price: data.trend_price
+                };
+
+                currentChat.messages.push({
+                    role: 'assistant',
+                    content: cardHtml,
+                    time,
+                    chartPoints: data.chart_points,
+                    canvasId,
+                    axisData
+                });
+
+                appendMessageBubble('assistant', cardHtml, time, true);
+                setTimeout(() => {
+                    drawQuantChart(canvasId, data.chart_points, axisData);
+                    attachDcaSlider(canvasId, data.daily_growth_percent);
+                }, 50);
+                saveChats();
+
+            } catch (err) {
+                removeTypingIndicator();
+                appendMessageBubble('assistant', `Could not complete analysis: ${err.message}`, time, true);
+            } finally {
+                state.isGenerating = false;
+                scrollToBottom();
+            }
+        }
+
+        // =========================================================================
+        // AUTONOMOUS SOLANA AGENT SKILL (MLH Solana Prize Winner Feature)
+        // =========================================================================
+        window.triggerSolanaAgentDCA = async function(symbol, amount) {
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Agent signing & broadcasting to Solana Devnet...';
+
+            try {
+                const res = await fetch('/api/solana/agent-dca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    btn.className = 'w-full py-2.5 bg-purple-500/20 text-purple-300 border border-purple-500/40 rounded-xl text-[11px] font-mono text-center block transition-all';
+                    btn.innerHTML = `✓ Solana Devnet Verified: <a href="${data.explorer_url}" target="_blank" class="underline font-bold text-white hover:text-purple-300">View TX on Solana Explorer ↗</a>`;
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-amber-400"></i> Devnet Notice: ${data.message || 'Check Devnet funds'}`;
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1 text-rose-400"></i> Agent execution error';
+            }
+        };
+
+        function attachDcaSlider(canvasId, dailyGrowthPct) {
+            const slider = document.getElementById(`dca-slider-${canvasId}`);
+            const valLabel = document.getElementById(`slider-val-${canvasId}`);
+            const investedLabel = document.getElementById(`dca-invested-${canvasId}`);
+            const projectedLabel = document.getElementById(`dca-projected-${canvasId}`);
+            if (!slider) return;
+
+            slider.addEventListener('input', (e) => {
+                const weekly = parseFloat(e.target.value);
+                valLabel.textContent = `$${weekly} / week`;
+                const weeks = 26;
+                const totalInvested = weekly * weeks;
+                investedLabel.textContent = `$${totalInvested.toLocaleString()}`;
+
+                const growthRate = Math.max(-0.02, Math.min(0.05, (dailyGrowthPct || 0.1) / 100));
+                let projected = 0;
+                for (let w = 1; w <= weeks; w++) {
+                    projected += weekly * Math.pow(1 + growthRate, (weeks - w) * 7);
+                }
+                projectedLabel.textContent = `$${Math.round(projected).toLocaleString()}`;
+            });
+        }
+
+        // =========================================================================
+        // LIGHT + DARK RESPONSIVE CANVAS CHART
+        // =========================================================================
+        function drawQuantChart(canvasId, points, axisData) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !points || points.length === 0) return;
+
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * (window.devicePixelRatio || 1);
+            canvas.height = rect.height * (window.devicePixelRatio || 1);
+            ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+
+            const width = rect.width;
+            const height = rect.height;
+            const padLeft = 48;
+            const padRight = 110;
+            const padTop = 15;
+            const padBottom = 22;
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#1e293b' : '#e2e8f0';
+            const labelColor = isDark ? '#94a3b8' : '#64748b';
+            const trendLabelColor = isDark ? '#cbd5e1' : '#334155';
+
+            const actualVals = points.map(p => p.actual);
+            const trendVals = points.map(p => p.trend);
+            const minVal = Math.min(...actualVals, ...trendVals) * 0.985;
+            const maxVal = Math.max(...actualVals, ...trendVals) * 1.015;
+
+            const getX = (idx) => padLeft + (idx / (points.length - 1)) * (width - padLeft - padRight);
+            const getY = (val) => height - padBottom - ((val - minVal) / (maxVal - minVal)) * (height - padTop - padBottom);
+
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            const gridIntervals = [0, Math.floor(points.length * 0.33), Math.floor(points.length * 0.66), points.length - 1];
+            gridIntervals.forEach(idx => {
+                const gx = getX(idx);
+                ctx.beginPath();
+                ctx.moveTo(gx, padTop);
+                ctx.lineTo(gx, height - padBottom);
+                ctx.stroke();
+            });
+
+            ctx.fillStyle = labelColor;
+            ctx.font = '10px JetBrains Mono, monospace';
+            ctx.textAlign = 'right';
+            const ySteps = 3;
+            for (let i = 0; i <= ySteps; i++) {
+                const val = minVal + (i / ySteps) * (maxVal - minVal);
+                const y = getY(val);
+                ctx.fillText('$' + val.toFixed(0), padLeft - 6, y + 3);
+            }
+
+            ctx.textAlign = 'center';
+            if (axisData) {
+                ctx.fillText(axisData.start_date || 'Day 1', getX(0), height - 6);
+                ctx.fillText(axisData.mid_date || 'Day 15', getX(Math.floor(points.length / 2)), height - 6);
+                ctx.fillText('Today', getX(points.length - 1), height - 6);
+            }
+
+            const trendY = getY(axisData.trend_price || points[points.length - 1].trend);
+            ctx.beginPath();
+            ctx.setLineDash([4, 4]);
+            ctx.moveTo(padLeft, trendY);
+            ctx.lineTo(width - 8, trendY);
+            ctx.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = trendLabelColor;
+            ctx.font = 'bold 10px JetBrains Mono, monospace';
+            ctx.fillText(`Normal: $${(axisData.trend_price || 0).toFixed(2)}`, width - padRight + 12, trendY - 4);
+
+            ctx.beginPath();
+            ctx.moveTo(getX(0), getY(points[0].actual));
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(getX(i), getY(points[i].actual));
+            }
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2.4;
+            ctx.stroke();
+
+            const lastIdx = points.length - 1;
+            ctx.beginPath();
+            ctx.arc(getX(lastIdx), getY(points[lastIdx].actual), 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = isDark ? '#f8fafc' : '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2.2;
+            ctx.stroke();
+        }
+
+        // =========================================================================
+        // MARKET RADAR
+        // =========================================================================
+        async function executeMarketRadar() {
+            renderTypingIndicator();
+            state.isGenerating = true;
+            const currentChat = state.chats.find(c => c.id === state.activeChatId);
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            try {
+                const res = await fetch('/api/market-radar');
+                const data = await res.json();
+                removeTypingIndicator();
+
+                if (data.error || !data.items) {
+                    appendMessageBubble('assistant', "Market radar is refreshing, please check back in a moment.", time, true);
+                    return;
+                }
+
+                const rows = data.items.map(item => `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-softbg-800/60 border border-slate-200 dark:border-slate-800 text-xs font-mono">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-slate-800 dark:text-white">${item.symbol}</span>
+                            <span class="text-slate-500 text-[11px]">$${item.price.toLocaleString()}</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-[10px] text-slate-400">Normal: $${item.trend}</span>
+                            <span class="px-2 py-0.5 rounded-lg text-[11px] font-bold ${item.diff_percent >= 0 ? 'bg-mint-500/10 text-mint-600 dark:text-mint-400 border border-mint-500/20' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20'}">
+                                ${item.diff_percent > 0 ? '+' : ''}${item.diff_percent}%
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+
+                const radarHtml = `
+                    <div class="rounded-2xl bg-white dark:bg-[#151922] border border-slate-200 dark:border-slate-800 p-4 text-slate-800 dark:text-slate-100 font-sans shadow-sm w-full text-xs space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <i class="fa-solid fa-chart-simple text-mint-500"></i> Market Momentum vs. Value
+                                </h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">30-day fair value scan</p>
+                            </div>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-mint-500/10 text-mint-600 dark:text-mint-400 font-mono">Live</span>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            ${rows}
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-softbg-800/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+                            <div><strong class="text-mint-600 dark:text-mint-400">High Momentum:</strong> Assets trading above their normal line show strong active buying.</div>
+                            <div><strong class="text-sky-600 dark:text-sky-400">Discount Opportunities:</strong> Assets below their normal line are statistically on sale for dollar-cost-averaging.</div>
+                        </div>
+                    </div>
+                `;
+
+                currentChat.messages.push({ role: 'assistant', content: radarHtml, time });
+                appendMessageBubble('assistant', radarHtml, time, true);
+                saveChats();
+
+            } catch (err) {
+                removeTypingIndicator();
+                appendMessageBubble('assistant', `Could not fetch market radar: ${err.message}`, time, true);
+            } finally {
+                state.isGenerating = false;
+                scrollToBottom();
+            }
+        }
+
+        // =========================================================================
+        // NLP INVESTMENT PARSER
+        // =========================================================================
+        function parseInvestmentInput(text) {
+            let cleanText = text
+                .replace(/\bzero\b/gi, '0')
+                .replace(/\bone\b/gi, '1')
+                .replace(/\btwo\b/gi, '2')
+                .replace(/\bthree\b/gi, '3')
+                .replace(/\bfour\b/gi, '4')
+                .replace(/\bfive\b/gi, '5')
+                .replace(/\bsix\b/gi, '6')
+                .replace(/\bseven\b/gi, '7')
+                .replace(/\beight\b/gi, '8')
+                .replace(/\bnine\b/gi, '9')
+                .replace(/\bten\b/gi, '10');
+
+            let buyPrice = 0.0;
+            const pricePatterns = [
+                /(?:price of|bought at|cost basis|cost|at|@|for)\s*:?\s*\$?([0-9]+(?:\.[0-9]+)?)/i,
+                /\$([0-9]+(?:\.[0-9]+)?)/i
+            ];
+            for (const pat of pricePatterns) {
+                const m = cleanText.match(pat);
+                if (m) { buyPrice = parseFloat(m[1]); break; }
+            }
+
+            let amount = 1.0;
+            const amountPatterns = [
+                /(?:bought|have|own|holding|purchased)\s+([0-9]+(?:\.[0-9]+)?)/i,
+                /([0-9]+(?:\.[0-9]+)?)\s*(?:shares|coins|tokens|units|stocks)/i
+            ];
+            for (const pat of amountPatterns) {
+                const m = cleanText.match(pat);
+                if (m) {
+                    const val = parseFloat(m[1]);
+                    if (val !== buyPrice) { amount = val; break; }
+                }
+            }
+
+            let symbol = '';
+            const analyzeMatch = cleanText.match(/(?:analyze|check|review|about|for)\s+([a-zA-Z]{2,10})/i);
+            const boughtMatch = cleanText.match(/(?:bought|have|own|holding)\s+[0-9]+(?:\.[0-9]+)?\s+([a-zA-Z]{2,10})/i);
+
+            if (analyzeMatch && !["THE", "THIS", "THAT", "STOCKS"].includes(analyzeMatch[1].toUpperCase())) {
+                symbol = analyzeMatch[1].toUpperCase();
+            } else if (boughtMatch && !["THE", "THIS", "SHARES", "STOCKS"].includes(boughtMatch[1].toUpperCase())) {
+                symbol = boughtMatch[1].toUpperCase();
+            }
+
+            if (!symbol) {
+                const stopWords = new Set([
+                    "CAN", "COULD", "WOULD", "WILL", "SHALL", "SHOULD", "YOU", "YOUR", "WE", "THEY",
+                    "I", "ME", "MY", "A", "AN", "THE", "AND", "OR", "BUT", "IF", "SO", "AT", "OF",
+                    "IN", "TO", "FOR", "WITH", "ON", "BOUGHT", "BUY", "PRICE", "AMOUNT", "SHARES",
+                    "COST", "ANALYZE", "CHECK", "HOW", "WHAT", "WHATS", "WHAT'S", "IS", "ARE", "HAVE",
+                    "OWN", "PLEASE", "TODAY", "STOCKS", "STOCK", "RIGHT", "NOW"
+                ]);
+                const cleanWords = cleanText.replace(/[^a-zA-Z0-9\s]/g, ' ').split(/\s+/);
+                for (const w of cleanWords) {
+                    const up = w.toUpperCase().trim();
+                    if (up.length >= 2 && up.length <= 10 && !stopWords.has(up) && isNaN(up)) {
+                        symbol = up;
+                        break;
+                    }
+                }
+            }
+
+            if (!symbol) symbol = 'BTC';
+            return { symbol, buyPrice, amount };
+        }
+
+        function cleanMessageText(text) {
+            if (!text) return '';
+            if (text.includes('rounded-2xl') || text.startsWith('<div')) return text;
+            return text
+                .replace(/^#{1,6}\s*(.*)$/gm, '<strong class="text-mint-700 dark:text-mint-400 block mt-2 mb-0.5 text-xs uppercase tracking-wide">$1</strong>')
+                .replace(/^---$/gm, '<div class="my-2 border-b border-slate-200 dark:border-slate-800"></div>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900 dark:text-white">$1</strong>');
+        }
+
+        function appendMessageBubble(role, content, time, shouldScroll = true) {
+            welcomeView.classList.add('hidden');
+            activeMessages.classList.remove('hidden');
+
+            const isUser = role === 'user';
+            const isCard = content.includes('rounded-2xl bg-white dark:bg-[#151922]');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex items-start space-x-2.5 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
+
+            const avatar = isUser 
+                ? `<div class="w-7 h-7 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center text-xs font-bold shrink-0"><i class="fa-solid fa-user"></i></div>`
+                : `<div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-mint-500 to-teal-400 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">T</div>`;
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `group relative rounded-2xl p-3 text-xs leading-relaxed ${
+                isUser 
+                    ? 'w-fit min-w-[120px] max-w-[85%] bg-mint-600 text-white rounded-tr-none shadow-sm' 
+                    : (isCard ? 'w-full p-0 bg-transparent' : 'max-w-[92%] md:max-w-[88%] bg-white dark:bg-softbg-900 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/80 dark:border-slate-800 shadow-sm')
+            }`;
+
+            messageBox.innerHTML = `
+                <div class="${isCard ? '' : 'whitespace-normal break-words'}">${cleanMessageText(content)}</div>
+                <div class="flex items-center justify-end mt-1 text-[9px] ${isUser ? 'text-mint-100' : 'text-slate-400'}">
+                    <span>${time}</span>
+                </div>
+            `;
+
+            wrapper.innerHTML = avatar;
+            wrapper.appendChild(messageBox);
+            activeMessages.appendChild(wrapper);
+
+            if (shouldScroll) scrollToBottom();
+            return wrapper;
+        }
+
+        function renderTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'typing-indicator';
+            indicator.className = 'flex items-start space-x-2.5 max-w-2xl mx-auto';
+            indicator.innerHTML = `
+                <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-mint-500 to-teal-400 flex items-center justify-center text-white text-xs font-bold shrink-0">T</div>
+                <div class="bg-white dark:bg-softbg-900 rounded-2xl p-3 text-xs text-slate-500 dark:text-slate-400 flex items-center space-x-1.5 border border-slate-200 dark:border-slate-800">
+                    <span>Tara is thinking</span>
+                    <span class="w-1.5 h-1.5 bg-mint-500 rounded-full typing-dot"></span>
+                    <span class="w-1.5 h-1.5 bg-mint-500 rounded-full typing-dot"></span>
+                    <span class="w-1.5 h-1.5 bg-mint-500 rounded-full typing-dot"></span>
+                </div>
+            `;
+            activeMessages.appendChild(indicator);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const ind = $('#typing-indicator');
+            if (ind) ind.remove();
+        }
+
+        function scrollToBottom() { chatContainer.scrollTop = chatContainer.scrollHeight; }
+        function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+        function applyTheme() {
+            if (state.isDarkMode) document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        }
+
+        function toggleTheme() {
+            state.isDarkMode = !state.isDarkMode;
+            localStorage.setItem('tara_theme', state.isDarkMode ? 'dark' : 'light');
+            applyTheme();
+        }
+
+        function toggleMobileSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            $('#mobile-overlay').classList.toggle('hidden');
+        }
+
+        function switchMode(newMode) {
+            state.mode = newMode;
+            updateModeUI();
+            const currentChat = state.chats.find(c => c.id === state.activeChatId);
+            if (currentChat && currentChat.messages && currentChat.messages.length > 0) {
+                state.activeChatId = null;
+                loadActiveChat();
+            }
+        }
+
+        function startNewConversation() {
+            state.activeChatId = null;
+            if (starterPillsContainer) starterPillsContainer.style.display = 'flex';
+            loadActiveChat();
+        }
+
+        function updateModeUI() {
+            if (state.mode === 'learn') {
+                modeLearnBtn.className = 'py-2 px-2 rounded-lg bg-mint-600 text-white transition-all text-center flex items-center justify-center space-x-1.5 shadow-sm';
+                modeAnalyzeBtn.className = 'py-2 px-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all text-center flex items-center justify-center space-x-1.5';
+                currentModeLabel.textContent = 'Learn Mode (Safe, Jargon-Free Mentor)';
+            } else {
+                modeAnalyzeBtn.className = 'py-2 px-2 rounded-lg bg-mint-600 text-white transition-all text-center flex items-center justify-center space-x-1.5 shadow-sm';
+                modeLearnBtn.className = 'py-2 px-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all text-center flex items-center justify-center space-x-1.5';
+                currentModeLabel.textContent = 'Analyze Mode (Mathematical Fair-Value & Risk)';
+            }
+        }
+
+        function getOrCreateActiveChat(firstMessageText) {
+            let currentChat = state.chats.find(c => c.id === state.activeChatId);
+            if (!currentChat) {
+                const newId = 'chat-' + Date.now();
+                const tag = state.mode === 'learn' ? '🌱' : '📊';
+                const cleanTitle = firstMessageText.length > 24 ? firstMessageText.substring(0, 24) + '...' : firstMessageText;
+                currentChat = { id: newId, mode: state.mode, title: `${tag} ${cleanTitle}`, messages: [] };
+                state.chats.unshift(currentChat);
+                state.activeChatId = newId;
+            }
+            return currentChat;
+        }
+
+        function saveChats() {
+            const validChats = state.chats.filter(c => c.messages && c.messages.length > 0);
+            localStorage.setItem('tara_chats', JSON.stringify(validChats));
+            renderChatHistory();
+
+            // Cloud Save if logged in
+            if (state.currentUser && state.activeChatId) {
+                const activeChat = state.chats.find(c => c.id === state.activeChatId);
+                if (activeChat) {
+                    fetch('/api/user/save-chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: state.currentUser,
+                            chat_id: activeChat.id,
+                            title: activeChat.title,
+                            messages: activeChat.messages
+                        })
+                    }).catch(e => console.log('Cloud sync notice:', e));
+                }
+            }
+        }
+
+        function renderChatHistory() {
+            chatHistoryContainer.innerHTML = '<div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1">Recent Conversations</div>';
+            const activeList = state.chats.filter(c => c.messages && c.messages.length > 0);
+            if (activeList.length === 0) {
+                chatHistoryContainer.innerHTML += `<div class="text-xs text-slate-400 px-2 py-1.5 italic">No recent chats</div>`;
+                return;
+            }
+            activeList.forEach(chat => {
+                const isActive = chat.id === state.activeChatId;
+                const item = document.createElement('div');
+                item.className = `group flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer text-xs transition-colors ${
+                    isActive ? 'bg-mint-500/10 text-mint-700 dark:text-mint-400 font-semibold border border-mint-500/20' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-softbg-800'
+                }`;
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2 truncate"><span class="truncate">${escapeHtml(chat.title)}</span></div>
+                    <button class="delete-chat-btn opacity-0 group-hover:opacity-100 p-1 hover:text-rose-500 transition-opacity"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-chat-btn')) return;
+                    state.activeChatId = chat.id;
+                    state.mode = chat.mode || 'learn';
+                    updateModeUI();
+                    loadActiveChat();
+                });
+                item.querySelector('.delete-chat-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    state.chats = state.chats.filter(c => c.id !== chat.id);
+                    if (state.activeChatId === chat.id) state.activeChatId = null;
+                    saveChats();
+                    loadActiveChat();
+                });
+                chatHistoryContainer.appendChild(item);
+            });
+        }
+
+        function loadActiveChat() {
+            activeMessages.innerHTML = '';
+            const currentChat = state.chats.find(c => c.id === state.activeChatId);
+            if (!currentChat || !currentChat.messages || currentChat.messages.length === 0) {
+                welcomeView.classList.remove('hidden');
+                activeMessages.classList.add('hidden');
+                if (starterPillsContainer) starterPillsContainer.style.display = 'flex';
+            } else {
+                welcomeView.classList.add('hidden');
+                activeMessages.classList.remove('hidden');
+                if (starterPillsContainer) starterPillsContainer.style.display = 'none';
+                currentChat.messages.forEach(msg => {
+                    appendMessageBubble(msg.role, msg.content, msg.time, false);
+                    if (msg.chartPoints && msg.canvasId) {
+                        setTimeout(() => drawQuantChart(msg.canvasId, msg.chartPoints, msg.axisData), 50);
+                    }
+                });
+                scrollToBottom();
+            }
+            renderChatHistory();
+        }
+
+        async function openTelemetryModal() {
+            telemetryModal.classList.remove('hidden');
+            const rowsContainer = $('#telemetry-rows');
+            rowsContainer.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400 font-mono italic">Querying Timescale Cloud...</td></tr>';
+
+            try {
+                const res = await fetch('/api/telemetry');
+                const data = await res.json();
+                if (!data.ticks || data.ticks.length === 0) {
+                    rowsContainer.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400 italic">No telemetry ticks yet. Run an analysis!</td></tr>';
+                    return;
+                }
+                rowsContainer.innerHTML = data.ticks.map(tick => `
+                    <tr class="text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-softbg-800/40 transition-colors">
+                        <td class="py-1.5 text-slate-400 text-[10px]">${tick.time.split(' ')[1] || tick.time}</td>
+                        <td class="py-1.5 font-bold text-mint-600 dark:text-mint-400">${tick.symbol}</td>
+                        <td class="py-1.5 font-mono">$${tick.price}</td>
+                        <td class="py-1.5 font-mono text-slate-500">$${tick.trend_price}</td>
+                        <td class="py-1.5 font-bold ${tick.percent_diff >= 0 ? 'text-mint-600 dark:text-mint-400' : 'text-rose-500'}">
+                            ${tick.percent_diff > 0 ? '+' : ''}${tick.percent_diff}%
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                rowsContainer.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-rose-500">Telemetry feed error: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function handleCsvUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const currentChat = getOrCreateActiveChat(`Portfolio (${file.name})`);
+            
+            appendMessageBubble('user', `Uploaded Portfolio: **${file.name}**`, time, true);
+            renderTypingIndicator();
+            state.isGenerating = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const resp = await fetch('/api/upload-portfolio', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await resp.json();
+                removeTypingIndicator();
+                const analysisText = res.analysis || "Portfolio analyzed successfully.";
+                currentChat.messages.push({ role: 'assistant', content: analysisText, time });
+                appendMessageBubble('assistant', analysisText, time, true);
+                saveChats();
+            } catch (err) {
+                removeTypingIndicator();
+                appendMessageBubble('assistant', `Could not parse file: ${err.message}`, time, true);
+            } finally {
+                state.isGenerating = false;
+                scrollToBottom();
+            }
+            e.target.value = '';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
